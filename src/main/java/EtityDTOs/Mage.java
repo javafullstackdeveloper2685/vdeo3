@@ -101,6 +101,7 @@ public class Mage extends Gamer {
         if (this.experience == 100) {
             this.attackPower = this.attackPower + 3;
             this.level++;
+            this.experience = 0;
         } else {
             setExperience(this.experience + i);
         }

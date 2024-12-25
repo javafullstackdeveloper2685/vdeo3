@@ -1,5 +1,6 @@
 import Entities.MageEntity;
 import Entities.WarriorEntity;
+import EtityDTOs.Gamer;
 import EtityDTOs.Mage;
 import EtityDTOs.Warrior;
 import serviceDb.EntitiesDbService;
@@ -7,6 +8,7 @@ import serviceDb.EntitiesDbService;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import java.util.Random;
 import java.util.Scanner;
 
 public class Main {
@@ -32,12 +34,25 @@ public class Main {
             warrior = new Warrior("Aragorn");
             mage = new Mage("Gandalf");
         } else if (choice == 2) {
+            System.out.println("загружаю персонажей");
             mage = new Mage(entitiesDbService.loadPlayer(entityManager, MageEntity.class, "Gandalf"));
             warrior = new Warrior(entitiesDbService.loadPlayer(entityManager, WarriorEntity.class, "Aragorn"));
 
             System.out.println("Текущие данные персонажей: ");
             System.out.println(mage);
             System.out.println(warrior);
+            System.out.println();
+
+            if (mage.getHealthPower() < 0 || warrior.getHealthPower() < 0) {
+                if (mage.getHealthPower() < 0) {
+                    mage.setHealthPower(givePotion());
+                    System.out.println("Здоровье мага было восстановлено\n");
+                } else {
+                    warrior.setHealthPower(givePotion());
+                    System.out.println("Здоровье война было восстановлено\n");
+                }
+            }
+
         }
 
         // Запуск игры
@@ -51,6 +66,12 @@ public class Main {
         entityManagerFactory.close();
     }
 
+    private static int givePotion() {
+        int newHealth = 255 + new Random().nextInt(16);
+        return newHealth;
+    }
+
+
     /**
      * Логика игры: сражение между персонажами.
      */
@@ -60,19 +81,19 @@ public class Main {
         while (mage.getHealthPower() > 0 && warrior.getHealthPower() > 0) {
             // Атака мага
             mage.attack(warrior);
+            mage.addExperience(10); // Добавление опыта магу
             Thread.sleep(2000); // Задержка для реалистичности
             if (warrior.getHealthPower() <= 0) {
                 System.out.printf("%s победил %s!\n", mage.getName(), warrior.getName());
-                mage.addExperience(10); // Добавление опыта магу
                 break;
             }
 
             // Атака воина
             warrior.attack(mage);
+            warrior.addExperience(10); // Добавление опыта воину
             Thread.sleep(2000);
             if (mage.getHealthPower() <= 0) {
                 System.out.printf("%s победил %s!\n", warrior.getName(), mage.getName());
-                warrior.addExperience(10); // Добавление опыта воину
                 break;
             }
         }
